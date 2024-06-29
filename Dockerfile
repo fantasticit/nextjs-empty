@@ -1,44 +1,36 @@
-FROM node:18-alpine AS base
+# 1. 构建基础镜像
+FROM alpine:3.15 AS base
+#纯净版镜像
 
-FROM base AS deps
+ENV NODE_ENV=production \
+  APP_PATH=/app
 
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
+WORKDIR $APP_PATH
 
-COPY package.json ./
+# 使用国内镜像，加速下面 apk add下载安装alpine不稳定情况
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 
-RUN npm update && npm install
+# 使用apk命令安装 nodejs 和 yarn
+RUN apk add --no-cache --update nodejs=16.13.1-r0 yarn=1.22.17-r0
 
-# If you want yarn update and  install uncomment the bellow
+# 2. 基于基础镜像安装项目依赖
+FROM base AS install
 
-# RUN yarn install &&  yarn upgrade
+COPY package.json yarn.lock ./
 
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+RUN yarn install
+
+# 3. 基于基础镜像进行最终构建
+FROM base
+
+# 拷贝 上面生成的 node_modules 文件夹复制到最终的工作目录下
+COPY --from=install $APP_PATH/node_modules ./node_modules
+
+# 拷贝当前目录下的所有文件(除了.dockerignore里排除的)，都拷贝到工作目录下
 COPY . .
 
-RUN npm run build
-
-FROM base AS runner
-WORKDIR /app
-
-ENV NODE_ENV production
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-COPY --from=builder /app/public ./public
-
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
-
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
+RUN yarn build
 
 EXPOSE 3000
 
-ENV PORT 3000
-
-CMD ["npm", "start"]
+CMD ["yarn", "start"]
