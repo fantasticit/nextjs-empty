@@ -6,6 +6,7 @@ pipeline{
     stages{
         stage("build"){
             steps {
+                sh "chmod +x -R ${env.WORKSPACE}"
                 sh './build.sh'
             }
         }
