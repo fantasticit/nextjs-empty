@@ -15,6 +15,7 @@ if [ -d ${outputDir} ]; then
 fi
 mkdir -p ${outputDir}
 
+cp -v -L ecosystem.config.js ${outputDir}
 cp -v -L package.json ${outputDir}
 cp -v -L next.config.mjs ${outputDir}
 cp -v -L pnpm-lock.yaml ${outputDir}

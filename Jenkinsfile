@@ -22,7 +22,7 @@ pipeline{
                                 sshTransfer(
                                     sourceFiles: 'output.tar.gz',
                                     remoteDirectory: 'nextjs-example',
-                                    execCommand: "cd /root/apps/nextjs-example; tar -xzvf output.tar.gz; cd output; pm2 start ecosystem.config.js"
+                                    execCommand: "cd nextjs-example; tar -xzvf output.tar.gz; cd output; pm2 start ecosystem.config.js"
                                 ), 
                             ],
                             verbose: true
