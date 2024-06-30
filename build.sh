@@ -10,10 +10,16 @@ pnpm run build
 
 outputDir="output"
 
-cp -v -L package.json ${clientOutput}
-cp -v -L next.config.js ${clientOutput}
-cp -v -L -r public ${clientOutput}
-cp -v -L -r .next ${clientOutput}
+if [ -d ${outputDir} ]; then
+  rm -rfv ${outputDir}
+fi
+mkdir -p ${outputDir}
+
+cp -v -L package.json ${outputDir}
+cp -v -L next.config.mjs ${outputDir}
+cp -v -L pnpm-lock.yaml ${outputDir}
+cp -v -L -r public ${outputDir}
+cp -v -L -r .next ${outputDir}
 
 cd ${outputDir}
 npm set-script prepare ""
